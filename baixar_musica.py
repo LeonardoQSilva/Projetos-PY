@@ -1,32 +1,49 @@
+import streamlit as st
 import yt_dlp
 import os
 
-def baixar():
-    # 1. Cria a pasta se ela não existir
-    pasta_destino = "Musicas_Moises"
-    if not os.path.exists(pasta_destino):
-        os.makedirs(pasta_destino)
-        print(f"Pasta '{pasta_destino}' criada com sucesso!")
+# Configuração da página
+st.set_page_config(page_title="Baixador pro Moises", page_icon="🎸")
 
-    link = input("Cole o link do YouTube: ")
+st.title("🎸 Baixador de Áudio (WAV) para Moises")
+st.markdown("Cole o link do YouTube abaixo para converter em alta qualidade.")
 
-    # 2. Configurações com o caminho da pasta
-    opcoes = {
-        'format': 'bestaudio/best',
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'wav',
-        }],
-        # O segredo está aqui: salvando dentro da pasta destino
-        'outtmpl': f'{pasta_destino}/%(title)s.%(ext)s',
-    }
+# Interface do Streamlit
+url = st.text_input("Link do vídeo do YouTube:", placeholder="https://www.youtube.com/watch?v=...")
 
-    try:
-        with yt_dlp.YoutubeDL(opcoes) as ydl:
-            ydl.download([link])
-        print(f"\nPronto! Sua música está na pasta: {pasta_destino}")
-    except Exception as e:
-        print(f"Erro: {e}")
+if st.button("Converter e Baixar"):
+    if url:
+        try:
+            with st.spinner("Processando áudio... Aguarde."):
+                # Opções do yt-dlp para o servidor
+                ydl_opts = {
+                    'format': 'bestaudio/best',
+                    'postprocessors': [{
+                        'key': 'FFmpegExtractAudio',
+                        'preferredcodec': 'wav',
+                    }],
+                    'outtmpl': 'musica_download.wav', # Nome temporário no servidor
+                }
 
-if __name__ == "__main__":
-    baixar()
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([url])
+
+                # Oferece o arquivo para o usuário baixar no PC/Tablet
+                with open("musica_download.wav", "rb") as f:
+                    st.success("Conversão concluída!")
+                    st.download_button(
+                        label="Clique aqui para baixar seu .WAV",
+                        data=f,
+                        file_name="musica_para_moises.wav",
+                        mime="audio/wav"
+                    )
+                
+                # Limpa o arquivo do servidor após o uso
+                os.remove("musica_download.wav")
+
+        except Exception as e:
+            st.error(f"Ocorreu um erro: {e}")
+    else:
+        st.warning("Por favor, cole um link válido.")
+
+st.info("Dica: Use esse site no seu Tab S10 Lite para baixar direto para o tablet!")
