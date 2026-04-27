@@ -17,27 +17,20 @@ if st.button("Converter e Baixar"):
             with st.spinner("Processando áudio... Aguarde."):
                 # Opções do yt-dlp para o servidor
                 ydl_opts = {
-                    'format': 'bestaudio/best',
-                    'postprocessors': [{
-                        'key': 'FFmpegExtractAudio',
-                        'preferredcodec': 'wav',
-                    }],
-                    'outtmpl': 'musica_download.wav',
-                    # --- NOVO: Truques para evitar o Erro 403 ---
-                    'quiet': True,
-                    'no_warnings': True,
-                    'nocheckcertificate': True,
-                    'ignoreerrors': False,
-                    'logtostderr': False,
-                    'addheader': [
-                        ('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-                    ],
-                    'extractor_args': {
-                        'youtube': {
-                            'player_client': ['web', 'mweb', 'tv'],
-                        }
-                    }
-                }
+    'format': 'bestaudio/best',
+    'postprocessors': [{
+        'key': 'FFmpegExtractAudio',
+        'preferredcodec': 'wav',
+    }],
+    'outtmpl': 'musica_download.wav',
+    # --- Tente adicionar estas linhas ---
+    'nocheckcertificate': True,
+    'no_color': True,
+    'youtube_include_dash_manifest': False, # Isso ajuda com erros de DRM falsos
+    'addheader': [
+        ('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36')
+    ],
+}
 
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     ydl.download([url])
