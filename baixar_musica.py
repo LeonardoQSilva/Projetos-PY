@@ -22,7 +22,21 @@ if st.button("Converter e Baixar"):
                         'key': 'FFmpegExtractAudio',
                         'preferredcodec': 'wav',
                     }],
-                    'outtmpl': 'musica_download.wav', # Nome temporário no servidor
+                    'outtmpl': 'musica_download.wav',
+                    # --- NOVO: Truques para evitar o Erro 403 ---
+                    'quiet': True,
+                    'no_warnings': True,
+                    'nocheckcertificate': True,
+                    'ignoreerrors': False,
+                    'logtostderr': False,
+                    'addheader': [
+                        ('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+                    ],
+                    'extractor_args': {
+                        'youtube': {
+                            'player_client': ['web', 'mweb', 'tv'],
+                        }
+                    }
                 }
 
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
