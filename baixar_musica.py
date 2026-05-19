@@ -1,56 +1,37 @@
-import streamlit as st
 import yt_dlp
 import os
 
-# Configuração da página
-st.set_page_config(page_title="Baixador pro Moises", page_icon="🎸")
+def iniciar_baixador():
+    pasta_raiz = "Musicas_Baixadas"
+    if not os.path.exists(pasta_raiz):
+        os.makedirs(pasta_raiz)
 
-st.title("🎸 Baixador de Áudio (WAV) para Moises")
-st.markdown("Cole o link do YouTube abaixo para converter em alta qualidade.")
+    link_usuario = input("Cole o link do YouTube: ").strip()
+    
+    print("\nQual formato você quer?")
+    print("1 - WAV ")
+    print("2 - MP3 ")
+    escolha = input("Digite 1 ou 2: ")
 
-# Interface do Streamlit
-url = st.text_input("Link do vídeo do YouTube:", placeholder="https://www.youtube.com/watch?v=...")
+    extensao = "wav" if escolha == "1" else "mp3"
+    
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': extensao,
+            'preferredquality': '192' if extensao == "mp3" else None,
+        }],
+        'outtmpl': f'{pasta_raiz}/%(title)s.%(ext)s',
+    }
 
-if st.button("Converter e Baixar"):
-    if url:
-        try:
-            with st.spinner("Processando áudio... Aguarde."):
-                # Opções do yt-dlp para o servidor
-                ydl_opts = {
-    'format': 'bestaudio/best',
-    'postprocessors': [{
-        'key': 'FFmpegExtractAudio',
-        'preferredcodec': 'wav',
-    }],
-    'outtmpl': 'musica_download.wav',
-    # --- Tente adicionar estas linhas ---
-    'nocheckcertificate': True,
-    'no_color': True,
-    'youtube_include_dash_manifest': False, # Isso ajuda com erros de DRM falsos
-    'addheader': [
-        ('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36')
-    ],
-}
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            print(f"\n[INFO] Iniciando download em {extensao.upper()}...")
+            ydl.download([link_usuario]) 
+        print(f"\n[SUCESSO] Arquivo salvo na pasta: {pasta_raiz}")
+    except Exception as e:
+        print(f"\n[ERRO] Algo deu errado: {e}")
 
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    ydl.download([url])
-
-                # Oferece o arquivo para o usuário baixar no PC/Tablet
-                with open("musica_download.wav", "rb") as f:
-                    st.success("Conversão concluída!")
-                    st.download_button(
-                        label="Clique aqui para baixar seu .WAV",
-                        data=f,
-                        file_name="musica_para_moises.wav",
-                        mime="audio/wav"
-                    )
-                
-                # Limpa o arquivo do servidor após o uso
-                os.remove("musica_download.wav")
-
-        except Exception as e:
-            st.error(f"Ocorreu um erro: {e}")
-    else:
-        st.warning("Por favor, cole um link válido.")
-
-st.info("Dica: Use esse site no seu Tab S10 Lite para baixar direto para o tablet!")
+if __name__ == "__main__":
+    iniciar_baixador()
